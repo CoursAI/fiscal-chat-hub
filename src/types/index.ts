@@ -24,6 +24,7 @@ export interface Attachment {
   url: string;
   type: string;
   size: number;
+  createdAt?: Date; // Adding the createdAt property as optional
 }
 
 export interface Conversation {

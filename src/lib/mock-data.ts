@@ -1,4 +1,3 @@
-
 import { User, Message, Conversation, Notification, Attachment } from "@/types";
 
 // Mock admin user (you)
@@ -47,6 +46,7 @@ export const mockAttachments: Attachment[] = [
     url: "/attachments/facture_mars_2023.pdf",
     type: "application/pdf",
     size: 254000,
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
   },
   {
     id: "attach2",
@@ -54,6 +54,7 @@ export const mockAttachments: Attachment[] = [
     url: "/attachments/declaration_tva_q1.pdf",
     type: "application/pdf",
     size: 1254000,
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
   },
   {
     id: "attach3",
@@ -61,6 +62,7 @@ export const mockAttachments: Attachment[] = [
     url: "/attachments/releve_banque.jpg",
     type: "image/jpeg",
     size: 450000,
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
   },
 ];
 
