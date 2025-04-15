@@ -1,8 +1,8 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { User } from "@/types";
-import { adminUser, mockClients } from "@/lib/mock-data";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -21,48 +21,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in (via localStorage in this mock version)
-    const storedUser = localStorage.getItem("fiscalChatUser");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setCurrentUser(parsedUser);
-      } catch (error) {
-        console.error("Failed to parse stored user", error);
-        localStorage.removeItem("fiscalChatUser");
+    // Check initial auth state
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        await fetchUserProfile(session.user.id);
+      } else {
+        setCurrentUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setCurrentUser({
+          id: data.id,
+          name: data.full_name,
+          email: (await supabase.auth.getUser()).data.user?.email || '',
+          role: data.role as 'admin' | 'client',
+          avatarUrl: undefined,
+          lastSeen: data.updated_at ? new Date(data.updated_at) : undefined
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    
     try {
-      // In a real app, this would be an API call
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
-      
-      // Mock login logic
-      if (email === adminUser.email && password === "admin") {
-        setCurrentUser(adminUser);
-        localStorage.setItem("fiscalChatUser", JSON.stringify(adminUser));
-        toast({
-          title: "Connexion réussie",
-          description: `Bienvenue, ${adminUser.name} !`,
-        });
-      } else {
-        const clientUser = mockClients.find(client => client.email === email);
-        if (clientUser && password === "client") {
-          setCurrentUser(clientUser);
-          localStorage.setItem("fiscalChatUser", JSON.stringify(clientUser));
-          toast({
-            title: "Connexion réussie",
-            description: `Bienvenue, ${clientUser.name} !`,
-          });
-        } else {
-          throw new Error("Email ou mot de passe incorrect");
-        }
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Connexion réussie",
+        description: "Bienvenue sur votre espace personnel !",
+      });
     } catch (error: any) {
       toast({
         title: "Erreur de connexion",
@@ -75,35 +95,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem("fiscalChatUser");
-    toast({
-      title: "Déconnexion réussie",
-      description: "À bientôt !",
-    });
+  const logout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+
+      setCurrentUser(null);
+      toast({
+        title: "Déconnexion réussie",
+        description: "À bientôt !",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la déconnexion.",
+        variant: "destructive",
+      });
+    }
   };
 
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true);
-    
     try {
-      // In a real app, this would be an API call
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
-      
-      // Check if email is already in use
-      const existingUser = [...mockClients, adminUser].find(user => user.email === email);
-      if (existingUser) {
-        throw new Error("Cet email est déjà utilisé");
-      }
-      
-      // In a real app, we would create a new user in the database
-      // For this mock version, we'll just show a success message
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
+      });
+
+      if (error) throw error;
+
       toast({
         title: "Inscription réussie",
         description: "Votre compte a été créé avec succès. Un administrateur examinera votre demande.",
       });
-      
     } catch (error: any) {
       toast({
         title: "Erreur d'inscription",
@@ -126,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
