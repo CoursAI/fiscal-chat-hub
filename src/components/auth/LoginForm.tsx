@@ -23,7 +23,11 @@ const LoginForm: React.FC = () => {
     try {
       await login(email, password);
     } catch (error: any) {
-      setError(error.message);
+      if (error.message === "Invalid login credentials") {
+        setError("Email ou mot de passe incorrect");
+      } else {
+        setError(error.message);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -108,11 +112,11 @@ const LoginForm: React.FC = () => {
           <div className="grid gap-2 text-xs">
             <div className="px-3 py-2 bg-white border border-gray-200 rounded-md">
               <p className="text-fiscal-blue-600 font-bold">Admin</p>
-              <p className="text-gray-500">admin@fiscalchat.com / admin</p>
+              <p className="text-gray-500">admin@fiscalchat.com / password123</p>
             </div>
             <div className="px-3 py-2 bg-white border border-gray-200 rounded-md">
               <p className="text-fiscal-blue-600 font-bold">Client</p>
-              <p className="text-gray-500">jean@example.com / client</p>
+              <p className="text-gray-500">client@example.com / password123</p>
             </div>
           </div>
         </div>

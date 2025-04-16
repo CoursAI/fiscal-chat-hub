@@ -3,6 +3,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { User } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -27,22 +29,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, newSession) => {
         console.log("Auth state changed:", event);
-        if (session?.user) {
-          await fetchUserProfile(session.user.id);
+        setSession(newSession);
+        
+        if (newSession?.user) {
+          // Defer Supabase calls with setTimeout to prevent deadlocks
+          setTimeout(() => {
+            fetchUserProfile(newSession.user.id);
+          }, 0);
         } else {
           setCurrentUser(null);
+          setIsLoading(false);
         }
-        setIsLoading(false);
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session check:", session ? "logged in" : "not logged in");
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
+    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      console.log("Initial session check:", existingSession ? "logged in" : "not logged in");
+      setSession(existingSession);
+      
+      if (existingSession?.user) {
+        fetchUserProfile(existingSession.user.id);
       } else {
         setIsLoading(false);
       }
@@ -64,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Error fetching user profile:', error);
+        setIsLoading(false);
         throw error;
       }
 
@@ -97,6 +107,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error("Login error:", error.message);
+        toast({
+          title: "Erreur de connexion",
+          description: error.message === "Invalid login credentials" 
+            ? "Email ou mot de passe incorrect" 
+            : error.message,
+          variant: "destructive",
+        });
         throw error;
       }
 
@@ -106,12 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Bienvenue sur votre espace personnel !",
       });
     } catch (error: any) {
-      toast({
-        title: "Erreur de connexion",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
+      // Error handling is done above
     } finally {
       setIsLoading(false);
     }
@@ -124,6 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
 
       setCurrentUser(null);
+      setSession(null);
       toast({
         title: "Déconnexion réussie",
         description: "À bientôt !",
@@ -154,21 +167,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error("Registration error:", error.message);
+        toast({
+          title: "Erreur d'inscription",
+          description: error.message === "User already registered" 
+            ? "Un compte avec cet email existe déjà" 
+            : error.message,
+          variant: "destructive",
+        });
         throw error;
       }
 
       console.log("Registration successful:", data);
       toast({
         title: "Inscription réussie",
-        description: "Votre compte a été créé avec succès. Un administrateur examinera votre demande.",
+        description: "Votre compte a été créé avec succès.",
       });
     } catch (error: any) {
-      toast({
-        title: "Erreur d'inscription",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
+      // Error handling is done above
     } finally {
       setIsLoading(false);
     }
