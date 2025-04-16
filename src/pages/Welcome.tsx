@@ -1,155 +1,222 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, FileText, Users, Lock, Settings, ChevronRight } from "lucide-react";
+import { 
+  MessageSquare, 
+  FileText, 
+  Users, 
+  TrendingUp,
+  ShieldCheck, 
+  Clock
+} from "lucide-react";
 
 const Welcome: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-fiscal-blue-700 text-white py-6">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl md:text-3xl font-bold">Fiscal Chat Hub</h1>
-            <div className="space-x-2">
-              <Button variant="outline" className="text-white border-white hover:bg-fiscal-blue-600" asChild>
-                <Link to="/login">Connexion</Link>
-              </Button>
-              <Button className="bg-white text-fiscal-blue-700 hover:bg-gray-100" asChild>
-                <Link to="/register">Inscription</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
+    <div className="min-h-screen bg-gradient-to-b from-fiscal-blue-700 to-fiscal-blue-900">
       {/* Hero Section */}
-      <section className="py-16 md:py-24 bg-fiscal-blue-600 text-white">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-center">
-            <div className="md:w-1/2 mb-8 md:mb-0 md:pr-12">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-                Communication sécurisée avec votre cabinet comptable
-              </h2>
-              <p className="text-lg md:text-xl text-fiscal-blue-100 mb-8">
-                Échangez des messages et des documents de manière simple, efficace et sécurisée avec votre expert comptable.
-              </p>
-              <Button size="lg" className="bg-white text-fiscal-blue-700 hover:bg-gray-100" asChild>
-                <Link to="/register">Commencer maintenant <ChevronRight className="ml-2 h-5 w-5" /></Link>
-              </Button>
-            </div>
-            <div className="md:w-1/2">
-              <div className="bg-fiscal-blue-500 p-8 rounded-xl shadow-lg">
-                <div className="bg-white/10 rounded-lg p-6 mb-4">
-                  <p className="text-white font-medium mb-2">
-                    "Cet outil a révolutionné notre façon de communiquer avec nos clients. Tout est centralisé, sécurisé et traçable."
-                  </p>
-                  <p className="text-fiscal-blue-200">— Cabinet Comptable</p>
-                </div>
-                <div className="bg-white/10 rounded-lg p-6">
-                  <p className="text-white font-medium mb-2">
-                    "Je peux facilement partager mes documents et suivre les échanges avec mon expert-comptable, tout est accessible en un seul endroit."
-                  </p>
-                  <p className="text-fiscal-blue-200">— Un client satisfait</p>
-                </div>
+      <div className="container mx-auto px-4 pt-10 pb-16">
+        <nav className="flex items-center justify-between mb-16">
+          <div className="flex items-center">
+            <div className="bg-white rounded-full p-2 mr-3">
+              <div className="bg-fiscal-blue-600 rounded-full w-8 h-8 flex items-center justify-center">
+                <span className="text-white font-bold">FC</span>
               </div>
             </div>
+            <span className="text-white font-bold text-xl">Fiscal Chat Hub</span>
+          </div>
+          <div className="flex gap-4">
+            <Link to="/login">
+              <Button variant="ghost" className="text-white hover:bg-white/10">
+                Connexion
+              </Button>
+            </Link>
+            <Link to="/register">
+              <Button className="bg-white text-fiscal-blue-700 hover:bg-white/90">
+                S'inscrire
+              </Button>
+            </Link>
+          </div>
+        </nav>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              Communiquez simplement avec votre expert-comptable
+            </h1>
+            <p className="text-fiscal-blue-100 text-lg md:text-xl mb-8">
+              Une plateforme dédiée pour échanger efficacement avec votre cabinet d'expertise comptable.
+              Partagez vos documents, posez vos questions et suivez vos dossiers en un seul endroit.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link to="/register">
+                <Button size="lg" className="bg-white text-fiscal-blue-700 hover:bg-white/90 font-bold">
+                  Commencer gratuitement
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10">
+                  Connexion
+                </Button>
+              </Link>
+            </div>
+          </div>
+          <div className="hidden lg:block">
+            <div className="relative">
+              <div className="absolute -top-6 -left-6 w-full h-full rounded-xl bg-fiscal-blue-600"></div>
+              <img 
+                src="/placeholder.svg" 
+                alt="Dashboard Preview" 
+                className="rounded-xl shadow-2xl relative z-10 w-full"
+              />
+            </div>
           </div>
         </div>
-      </section>
-
-      {/* Features */}
-      <section className="py-16 bg-white">
+      </div>
+      
+      {/* Features Section */}
+      <div className="bg-white py-20">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">Des fonctionnalités adaptées aux besoins comptables</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-12">
+            Tout ce dont vous avez besoin pour une communication efficace
+          </h2>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card>
-              <CardHeader>
-                <MessageSquare className="h-10 w-10 text-fiscal-blue-600 mb-2" />
-                <CardTitle>Messagerie Sécurisée</CardTitle>
-                <CardDescription>Échangez des messages confidentiels avec votre comptable en toute sécurité.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Conversation dédiée et privée entre vous et votre comptable. Interface intuitive et simple d'utilisation.</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <FileText className="h-10 w-10 text-fiscal-blue-600 mb-2" />
-                <CardTitle>Partage de Documents</CardTitle>
-                <CardDescription>Envoyez et recevez facilement tous vos documents comptables.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Factures, relevés bancaires, déclarations fiscales... Tous vos documents sont centralisés et horodatés.</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <Lock className="h-10 w-10 text-fiscal-blue-600 mb-2" />
-                <CardTitle>Sécurité Maximale</CardTitle>
-                <CardDescription>Vos données sont protégées et confidentielles.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600">Connexion sécurisée, chiffrement des données et accès limité à vous et votre comptable uniquement.</p>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <FeatureCard 
+              icon={<MessageSquare className="w-10 h-10 text-fiscal-blue-600" />}
+              title="Messagerie sécurisée"
+              description="Échangez en toute confidentialité avec votre expert-comptable via notre système de messagerie intégrée."
+            />
+            <FeatureCard 
+              icon={<FileText className="w-10 h-10 text-fiscal-blue-600" />}
+              title="Partage de documents"
+              description="Envoyez facilement vos documents comptables et recevez vos livrables en un clic."
+            />
+            <FeatureCard 
+              icon={<Users className="w-10 h-10 text-fiscal-blue-600" />}
+              title="Gestion des clients"
+              description="Pour les cabinets, gérez tous vos clients sur une seule et même plateforme."
+            />
+            <FeatureCard 
+              icon={<TrendingUp className="w-10 h-10 text-fiscal-blue-600" />}
+              title="Suivi en temps réel"
+              description="Suivez l'avancement de vos dossiers et restez informé des échéances importantes."
+            />
+            <FeatureCard 
+              icon={<ShieldCheck className="w-10 h-10 text-fiscal-blue-600" />}
+              title="Sécurité maximale"
+              description="Vos données sont protégées par un système de chiffrement avancé conforme au RGPD."
+            />
+            <FeatureCard 
+              icon={<Clock className="w-10 h-10 text-fiscal-blue-600" />}
+              title="Disponibilité 24/7"
+              description="Accédez à vos informations et communiquez à tout moment, où que vous soyez."
+            />
           </div>
         </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6 text-gray-800">Prêt à simplifier vos échanges ?</h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Inscrivez-vous dès maintenant et profitez d'une communication fluide et sécurisée avec votre cabinet d'expertise comptable.
-          </p>
-          <div className="flex justify-center gap-4">
-            <Button size="lg" className="bg-fiscal-blue-600 hover:bg-fiscal-blue-700" asChild>
-              <Link to="/register">S'inscrire</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="border-fiscal-blue-600 text-fiscal-blue-600 hover:bg-fiscal-blue-50" asChild>
-              <Link to="/login">Se connecter</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12">
+      </div>
+      
+      {/* Testimonial Section */}
+      <div className="bg-gray-50 py-20">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">Fiscal Chat Hub</h3>
-              <p className="text-gray-300">
-                La solution de communication professionnelle pour les cabinets comptables et leurs clients.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Liens Rapides</h4>
-              <ul className="space-y-2">
-                <li><Link to="/" className="text-gray-300 hover:text-white">Accueil</Link></li>
-                <li><Link to="/login" className="text-gray-300 hover:text-white">Connexion</Link></li>
-                <li><Link to="/register" className="text-gray-300 hover:text-white">Inscription</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Contact</h4>
-              <p className="text-gray-300">contact@fiscalchathub.com</p>
-              <p className="text-gray-300">+33 1 23 45 67 89</p>
-            </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-12">
+            Ce que disent nos clients
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <TestimonialCard 
+              quote="Grâce à Fiscal Chat Hub, je peux facilement partager mes documents et poser mes questions à mon comptable sans avoir à envoyer des dizaines d'emails."
+              author="Marie D."
+              role="Dirigeante de PME"
+            />
+            <TestimonialCard 
+              quote="En tant qu'expert-comptable, cette plateforme m'a permis d'optimiser mes échanges avec mes clients et de gagner un temps précieux."
+              author="Pierre M."
+              role="Expert-comptable"
+            />
+            <TestimonialCard 
+              quote="Interface intuitive et fonctionnelle. Je recommande vivement à tous les entrepreneurs qui veulent simplifier leur relation avec leur comptable."
+              author="Sophie L."
+              role="Entrepreneuse"
+            />
           </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
-            <p>&copy; 2025 Fiscal Chat Hub. Tous droits réservés.</p>
+        </div>
+      </div>
+      
+      {/* CTA Section */}
+      <div className="bg-fiscal-blue-700 py-16 text-center">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+            Prêt à simplifier vos échanges comptables ?
+          </h2>
+          <p className="text-fiscal-blue-100 text-xl mb-8 max-w-3xl mx-auto">
+            Rejoignez les milliers d'entreprises qui utilisent déjà Fiscal Chat Hub pour communiquer efficacement avec leur expert-comptable.
+          </p>
+          <Link to="/register">
+            <Button size="lg" className="bg-white text-fiscal-blue-700 hover:bg-white/90 font-bold px-8">
+              Créer un compte gratuitement
+            </Button>
+          </Link>
+        </div>
+      </div>
+      
+      {/* Footer */}
+      <footer className="bg-fiscal-blue-900 text-fiscal-blue-100 py-10">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center mb-6 md:mb-0">
+              <div className="bg-white rounded-full p-1 mr-2">
+                <div className="bg-fiscal-blue-600 rounded-full w-6 h-6 flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">FC</span>
+                </div>
+              </div>
+              <span className="text-white font-bold">Fiscal Chat Hub</span>
+            </div>
+            <div className="text-sm">
+              &copy; {new Date().getFullYear()} Fiscal Chat Hub. Tous droits réservés.
+            </div>
           </div>
         </div>
       </footer>
     </div>
+  );
+};
+
+const FeatureCard = ({ icon, title, description }: { 
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) => {
+  return (
+    <Card className="border-none shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <CardContent className="pt-6">
+        <div className="mb-5">
+          {icon}
+        </div>
+        <h3 className="text-xl font-bold mb-3 text-gray-800">{title}</h3>
+        <p className="text-gray-600">{description}</p>
+      </CardContent>
+    </Card>
+  );
+};
+
+const TestimonialCard = ({ quote, author, role }: {
+  quote: string;
+  author: string;
+  role: string;
+}) => {
+  return (
+    <Card className="border-none shadow-lg">
+      <CardContent className="pt-6">
+        <div className="text-fiscal-blue-600 text-4xl font-serif mb-4">"</div>
+        <p className="text-gray-700 mb-6 italic">{quote}</p>
+        <div>
+          <p className="font-bold text-gray-800">{author}</p>
+          <p className="text-gray-500 text-sm">{role}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
