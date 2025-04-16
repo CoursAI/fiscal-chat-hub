@@ -10,7 +10,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   updateProfile: (data: { name?: string }) => Promise<void>;
   updatePassword: (newPassword: string) => Promise<void>;
@@ -124,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     } catch (error: any) {
       // Error handling is done above
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -184,6 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     } catch (error: any) {
       // Error handling is done above
+      throw error;
     } finally {
       setIsLoading(false);
     }

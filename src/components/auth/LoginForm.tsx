@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { ArrowRight, Mail, Lock, LogIn, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/components/ui/use-toast";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -14,6 +15,7 @@ const LoginForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const { login } = useAuth();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,11 +24,16 @@ const LoginForm: React.FC = () => {
 
     try {
       await login(email, password);
+      toast({
+        title: "Connexion réussie",
+        description: "Bienvenue sur votre espace personnel !",
+      });
     } catch (error: any) {
+      console.error("Login error:", error.message);
       if (error.message === "Invalid login credentials") {
         setError("Email ou mot de passe incorrect");
       } else {
-        setError(error.message);
+        setError(error.message || "Une erreur est survenue lors de la connexion");
       }
     } finally {
       setIsSubmitting(false);
