@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { ArrowRight, Mail, Lock, LogIn } from "lucide-react";
+import { ArrowRight, Mail, Lock, LogIn, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -29,7 +30,7 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-md">
+    <form onSubmit={handleSubmit} className="space-y-6 w-full">
       <div className="space-y-2">
         <Label htmlFor="email" className="text-gray-700 font-medium">Adresse email</Label>
         <div className="relative">
@@ -38,7 +39,7 @@ const LoginForm: React.FC = () => {
             id="email"
             type="email"
             placeholder="votre@email.com"
-            className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500"
+            className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500 rounded-xl"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -49,14 +50,14 @@ const LoginForm: React.FC = () => {
       <div className="space-y-2">
         <div className="flex justify-between">
           <Label htmlFor="password" className="text-gray-700 font-medium">Mot de passe</Label>
-          <a href="#" className="text-sm text-fiscal-blue-600 hover:underline">Mot de passe oublié ?</a>
+          <a href="#" className="text-sm text-fiscal-blue-600 hover:underline font-medium">Mot de passe oublié ?</a>
         </div>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5" />
           <Input
             id="password"
             type="password"
-            className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500"
+            className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500 rounded-xl"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -65,17 +66,19 @@ const LoginForm: React.FC = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-          {error}
-        </div>
+        <Alert variant="destructive" className="rounded-xl">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="ml-2">{error}</AlertDescription>
+        </Alert>
       )}
 
       <div>
         <Button
           type="submit"
-          className="w-full py-3"
+          className="w-full py-6"
           variant="gradient"
           size="lg"
+          rounded="full"
           disabled={isSubmitting}
         >
           {isSubmitting ? (
@@ -86,7 +89,7 @@ const LoginForm: React.FC = () => {
           ) : (
             <>
               <span>Se connecter</span>
-              <LogIn className="ml-1 h-5 w-5" />
+              <LogIn className="ml-2 h-5 w-5" />
             </>
           )}
         </Button>
@@ -95,12 +98,12 @@ const LoginForm: React.FC = () => {
       <div className="text-center text-sm">
         <p className="text-gray-600">
           Pas encore de compte ?{" "}
-          <Link to="/register" className="text-fiscal-blue-600 hover:underline font-medium">
-            S'inscrire <ArrowRight className="inline h-3 w-3" />
+          <Link to="/register" className="text-fiscal-blue-600 hover:underline font-medium group">
+            S'inscrire <ArrowRight className="inline h-3 w-3 group-hover:translate-x-1 transition-transform" />
           </Link>
         </p>
         
-        <div className="mt-8 p-5 bg-gray-50 border border-gray-100 rounded-lg">
+        <div className="mt-8 p-5 bg-gray-50 border border-gray-100 rounded-xl shadow-sm">
           <p className="text-gray-600 font-medium mb-3">Comptes de démonstration :</p>
           <div className="grid gap-2 text-xs">
             <div className="px-3 py-2 bg-white border border-gray-200 rounded-md">

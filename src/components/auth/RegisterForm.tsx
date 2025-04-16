@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { ArrowRight, User, Mail, Lock, Check, UserPlus } from "lucide-react";
+import { ArrowRight, User, Mail, Lock, Check, UserPlus, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const RegisterForm: React.FC = () => {
   const [name, setName] = useState("");
@@ -51,11 +52,11 @@ const RegisterForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-md">
+    <form onSubmit={handleSubmit} className="space-y-6 w-full">
       {success ? (
-        <div className="bg-green-50 border border-green-100 text-green-700 p-6 rounded-lg">
+        <div className="bg-green-50 border border-green-100 text-green-700 p-6 rounded-xl shadow-sm">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-green-100 rounded-full p-2">
+            <div className="bg-green-100 rounded-full p-3">
               <Check className="w-8 h-8 text-green-600" />
             </div>
           </div>
@@ -66,7 +67,7 @@ const RegisterForm: React.FC = () => {
           </p>
           <Link 
             to="/login" 
-            className="block w-full py-2 px-4 bg-green-600 text-white text-center rounded-md hover:bg-green-700 transition-colors"
+            className="block w-full py-3 bg-green-600 text-white text-center rounded-full hover:bg-green-700 transition-colors font-medium"
           >
             Retour à la page de connexion
           </Link>
@@ -81,7 +82,7 @@ const RegisterForm: React.FC = () => {
                 id="name"
                 type="text"
                 placeholder="Jean Dupont"
-                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500"
+                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500 rounded-xl"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -97,7 +98,7 @@ const RegisterForm: React.FC = () => {
                 id="email"
                 type="email"
                 placeholder="votre@email.com"
-                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500"
+                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500 rounded-xl"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -112,7 +113,7 @@ const RegisterForm: React.FC = () => {
               <Input
                 id="password"
                 type="password"
-                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500"
+                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500 rounded-xl"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -129,7 +130,7 @@ const RegisterForm: React.FC = () => {
               <Input
                 id="confirm-password"
                 type="password"
-                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500"
+                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500 rounded-xl"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -138,17 +139,19 @@ const RegisterForm: React.FC = () => {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
+            <Alert variant="destructive" className="rounded-xl">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="ml-2">{error}</AlertDescription>
+            </Alert>
           )}
 
           <div>
             <Button 
               type="submit" 
-              className="w-full py-3" 
+              className="w-full py-6" 
               variant="gradient"
               size="lg" 
+              rounded="full"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -159,7 +162,7 @@ const RegisterForm: React.FC = () => {
               ) : (
                 <>
                   <span>S'inscrire</span>
-                  <UserPlus className="ml-1 h-5 w-5" />
+                  <UserPlus className="ml-2 h-5 w-5" />
                 </>
               )}
             </Button>
@@ -168,8 +171,8 @@ const RegisterForm: React.FC = () => {
           <div className="text-center text-sm">
             <p className="text-gray-600">
               Déjà un compte ?{" "}
-              <Link to="/login" className="text-fiscal-blue-600 hover:underline font-medium">
-                Se connecter <ArrowRight className="inline h-3 w-3" />
+              <Link to="/login" className="text-fiscal-blue-600 hover:underline font-medium group">
+                Se connecter <ArrowRight className="inline h-3 w-3 group-hover:translate-x-1 transition-transform" />
               </Link>
             </p>
           </div>
