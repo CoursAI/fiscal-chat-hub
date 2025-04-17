@@ -1,7 +1,7 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import LoginForm from "@/components/auth/LoginForm";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { Building, MessageSquare, ShieldCheck, ArrowLeft } from "lucide-react";
@@ -9,6 +9,14 @@ import { Button } from "@/components/ui/button";
 
 const Login: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // Effet pour rediriger l'utilisateur connecté
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/messages");
+    }
+  }, [isAuthenticated, navigate]);
 
   if (isLoading) {
     return (
