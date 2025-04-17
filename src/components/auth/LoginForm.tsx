@@ -40,6 +40,16 @@ const LoginForm: React.FC = () => {
     }
   };
 
+  const fillDemoCredentials = (type: 'admin' | 'client') => {
+    if (type === 'admin') {
+      setEmail("admin@fiscalchat.com");
+      setPassword("password123");
+    } else {
+      setEmail("client@example.com");
+      setPassword("password123");
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 w-full">
       <div className="space-y-2">
@@ -117,11 +127,17 @@ const LoginForm: React.FC = () => {
         <div className="mt-8 p-5 bg-gray-50 border border-gray-100 rounded-xl shadow-sm">
           <p className="text-gray-600 font-medium mb-3">Comptes de démonstration :</p>
           <div className="grid gap-2 text-xs">
-            <div className="px-3 py-2 bg-white border border-gray-200 rounded-md">
+            <div 
+              onClick={() => fillDemoCredentials('admin')}
+              className="px-3 py-2 bg-white border border-gray-200 rounded-md cursor-pointer hover:border-fiscal-blue-300 hover:bg-fiscal-blue-50 transition-colors"
+            >
               <p className="text-fiscal-blue-600 font-bold">Admin</p>
               <p className="text-gray-500">admin@fiscalchat.com / password123</p>
             </div>
-            <div className="px-3 py-2 bg-white border border-gray-200 rounded-md">
+            <div 
+              onClick={() => fillDemoCredentials('client')}
+              className="px-3 py-2 bg-white border border-gray-200 rounded-md cursor-pointer hover:border-fiscal-blue-300 hover:bg-fiscal-blue-50 transition-colors"
+            >
               <p className="text-fiscal-blue-600 font-bold">Client</p>
               <p className="text-gray-500">client@example.com / password123</p>
             </div>
