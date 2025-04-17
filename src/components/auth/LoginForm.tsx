@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,9 @@ const LoginForm: React.FC = () => {
 
   // Effet pour rediriger l'utilisateur connecté
   useEffect(() => {
+    console.log("LoginForm - Authentication state:", isAuthenticated);
     if (isAuthenticated) {
+      console.log("LoginForm - Redirecting to /messages");
       navigate("/messages");
     }
   }, [isAuthenticated, navigate]);
@@ -32,10 +33,7 @@ const LoginForm: React.FC = () => {
 
     try {
       await login(email, password);
-      toast({
-        title: "Connexion réussie",
-        description: "Bienvenue sur votre espace personnel !",
-      });
+      console.log("Login succeeded, waiting for auth state to update");
       // La redirection est maintenant gérée par l'effet useEffect ci-dessus
     } catch (error: any) {
       console.error("Login error:", error.message);

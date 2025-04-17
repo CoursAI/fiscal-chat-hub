@@ -15,8 +15,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   // Effet pour s'assurer que l'utilisateur est redirigé s'il se déconnecte
   useEffect(() => {
+    console.log("AppLayout - Authentication state:", isAuthenticated, "Loading:", isLoading);
     if (!isLoading && !isAuthenticated) {
-      navigate("/login");
+      console.log("AppLayout - Not authenticated, redirecting to /login");
+      navigate("/login", { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate]);
 
@@ -29,7 +31,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    console.log("AppLayout - Not authenticated, rendering Navigate component");
+    return <Navigate to="/login" replace />;
   }
 
   return (

@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { User } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
@@ -118,15 +117,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       console.log("Login successful:", data?.user?.id);
+      // Immédiatement mettre à jour l'utilisateur actuel au lieu d'attendre l'événement onAuthStateChange
+      if (data?.user) {
+        // Notez que nous ne mettons pas isLoading à false ici car fetchUserProfile le fera
+        fetchUserProfile(data.user.id);
+      }
+
       toast({
         title: "Connexion réussie",
         description: "Bienvenue sur votre espace personnel !",
       });
+      
+      return; // Nous retournons ici pour que le composant LoginForm puisse continuer
     } catch (error: any) {
       // Error handling is done above
-      throw error;
-    } finally {
       setIsLoading(false);
+      throw error;
     }
   };
 

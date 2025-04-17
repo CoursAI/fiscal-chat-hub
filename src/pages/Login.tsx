@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import LoginForm from "@/components/auth/LoginForm";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -13,7 +12,9 @@ const Login: React.FC = () => {
 
   // Effet pour rediriger l'utilisateur connecté
   useEffect(() => {
+    console.log("Login page - Authentication state:", isAuthenticated);
     if (isAuthenticated) {
+      console.log("Login page - Redirecting to /messages");
       navigate("/messages");
     }
   }, [isAuthenticated, navigate]);
@@ -30,7 +31,8 @@ const Login: React.FC = () => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/messages" />;
+    console.log("Login page - Redirecting with Navigate component");
+    return <Navigate to="/messages" replace />;
   }
 
   return (
