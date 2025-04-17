@@ -13,16 +13,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Effet pour s'assurer que l'utilisateur est redirigé s'il se déconnecte
   useEffect(() => {
-    console.log("AppLayout - Authentication state:", isAuthenticated, "Loading:", isLoading);
-    if (!isLoading && !isAuthenticated) {
-      console.log("AppLayout - Not authenticated, redirecting to /login");
-      navigate("/login", { replace: true });
-    }
-  }, [isAuthenticated, isLoading, navigate]);
+    console.log("AppLayout - Authentication state check:", { isAuthenticated, isLoading });
+  }, [isAuthenticated, isLoading]);
 
   if (isLoading) {
+    console.log("AppLayout - Loading state");
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fiscal-blue-600"></div>
@@ -31,10 +27,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    console.log("AppLayout - Not authenticated, rendering Navigate component");
+    console.log("AppLayout - No authentication detected, redirecting to login");
     return <Navigate to="/login" replace />;
   }
 
+  console.log("AppLayout - Authenticated, rendering protected content");
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar />

@@ -117,22 +117,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       console.log("Login successful:", data?.user?.id);
-      // Immédiatement mettre à jour l'utilisateur actuel au lieu d'attendre l'événement onAuthStateChange
-      if (data?.user) {
-        // Notez que nous ne mettons pas isLoading à false ici car fetchUserProfile le fera
-        fetchUserProfile(data.user.id);
-      }
-
       toast({
         title: "Connexion réussie",
         description: "Bienvenue sur votre espace personnel !",
       });
       
-      return; // Nous retournons ici pour que le composant LoginForm puisse continuer
+      // No explicit redirection here - we let the isAuthenticated state change trigger redirection
     } catch (error: any) {
       // Error handling is done above
-      setIsLoading(false);
       throw error;
+    } finally {
+      // Don't set isLoading to false yet - the auth state change will handle this
+      // Keep the user in loading state until profile is fetched
     }
   };
 

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ArrowRight, Mail, Lock, LogIn, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,16 +15,6 @@ const LoginForm: React.FC = () => {
   const [error, setError] = useState("");
   const { login, isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
-
-  // Effet pour rediriger l'utilisateur connecté
-  useEffect(() => {
-    console.log("LoginForm - Authentication state:", isAuthenticated);
-    if (isAuthenticated) {
-      console.log("LoginForm - Redirecting to /messages");
-      navigate("/messages");
-    }
-  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,11 +22,11 @@ const LoginForm: React.FC = () => {
     setIsSubmitting(true);
 
     try {
+      console.log("LoginForm - Attempting login with:", email);
       await login(email, password);
-      console.log("Login succeeded, waiting for auth state to update");
-      // La redirection est maintenant gérée par l'effet useEffect ci-dessus
+      console.log("LoginForm - Login function completed successfully");
     } catch (error: any) {
-      console.error("Login error:", error.message);
+      console.error("LoginForm - Login error:", error.message);
       if (error.message === "Invalid login credentials") {
         setError("Email ou mot de passe incorrect");
       } else {
