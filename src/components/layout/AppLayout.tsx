@@ -16,7 +16,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   useEffect(() => {
     console.log("AppLayout - Current state:", { isAuthenticated, isLoading });
     
-    // If not authenticated and not loading, redirect to login
     if (!isAuthenticated && !isLoading) {
       console.log("AppLayout - Not authenticated, redirecting to login");
       navigate('/login', { replace: true });

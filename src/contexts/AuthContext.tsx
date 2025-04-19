@@ -29,23 +29,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log("AuthProvider - Initializing");
     
-    // Set up auth state listener FIRST
+    // First check for existing session
+    const initializeAuth = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get current session
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
+        console.log("AuthProvider - Initial session check:", existingSession?.user?.email);
+        setSession(existingSession);
+        
+        if (existingSession?.user) {
+          await fetchUserProfile(existingSession.user.id);
+        } else {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+        setIsLoading(false);
+      }
+    };
+    
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
+      async (event, newSession) => {
         console.log("AuthProvider - Auth state changed:", { event, user: newSession?.user?.email });
         setSession(newSession);
         
         if (newSession?.user) {
-          // Defer profile fetch to prevent deadlocks
-          setTimeout(() => {
-            fetchUserProfile(newSession.user.id);
-          }, 0);
-          
-          // If user is authenticated and on login page, redirect them
-          if (window.location.pathname === '/login') {
-            console.log("AuthProvider - Redirecting authenticated user from login page to messages");
-            navigate('/messages', { replace: true });
-          }
+          await fetchUserProfile(newSession.user.id);
         } else {
           setCurrentUser(null);
           setIsLoading(false);
@@ -53,23 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
-      console.log("AuthProvider - Initial session check:", existingSession?.user?.email);
-      setSession(existingSession);
-      
-      if (existingSession?.user) {
-        fetchUserProfile(existingSession.user.id);
-        
-        // If user is authenticated and on login page, redirect them
-        if (window.location.pathname === '/login') {
-          console.log("AuthProvider - Redirecting authenticated user from login page to messages");
-          navigate('/messages', { replace: true });
-        }
-      } else {
-        setIsLoading(false);
-      }
-    });
+    initializeAuth();
 
     return () => {
       subscription.unsubscribe();
@@ -85,7 +81,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching profile:", error);
+        throw error;
+      }
 
       if (data) {
         console.log("AuthProvider - Profile loaded:", data);
@@ -97,6 +96,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: data.role as 'admin' | 'client',
           avatarUrl: undefined,
           lastSeen: data.updated_at ? new Date(data.updated_at) : undefined
+        });
+      } else {
+        console.error("No profile found for user:", userId);
+        toast({
+          title: "Erreur",
+          description: "Profil utilisateur introuvable",
+          variant: "destructive",
         });
       }
     } catch (error) {
@@ -112,8 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       console.log("Attempting login for:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -122,7 +128,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error("Login error:", error.message);
-        setIsLoading(false);
         toast({
           title: "Erreur de connexion",
           description: error.message === "Invalid login credentials" 
@@ -130,6 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             : error.message,
           variant: "destructive",
         });
+        setIsLoading(false);
         throw error;
       }
 
@@ -139,17 +145,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Bienvenue sur votre espace personnel !",
       });
       
-      // Use navigate for immediate redirection
       navigate('/messages', { replace: true });
     } catch (error: any) {
       // Error handling is done above
+      setIsLoading(false);
       throw error;
     }
-    // Don't set isLoading to false here as the auth state change will handle this
   };
 
   const logout = async () => {
     try {
+      setIsLoading(true);
       console.log("Logging out");
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
@@ -161,7 +167,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "À bientôt !",
       });
       
-      // Redirect to login page after logout
       navigate('/login', { replace: true });
     } catch (error: any) {
       console.error("Logout error:", error);
@@ -170,6 +175,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Une erreur est survenue lors de la déconnexion.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
