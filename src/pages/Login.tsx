@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import LoginForm from "@/components/auth/LoginForm";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { Building, MessageSquare, ShieldCheck, ArrowLeft } from "lucide-react";
@@ -8,17 +8,8 @@ import { Button } from "@/components/ui/button";
 
 const Login: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    console.log("Login page - Authentication state check:", { isAuthenticated, isLoading });
-    
-    // If user is authenticated, redirect to messages
-    if (isAuthenticated && !isLoading) {
-      console.log("Login page - User is authenticated, redirecting to /messages");
-      navigate('/messages', { replace: true });
-    }
-  }, [isAuthenticated, isLoading, navigate]);
+  console.log("Login page - Current state:", { isAuthenticated, isLoading });
 
   if (isLoading) {
     console.log("Login page - Loading state");
@@ -33,7 +24,7 @@ const Login: React.FC = () => {
   }
 
   if (isAuthenticated) {
-    console.log("Login page - Authentication confirmed, redirecting to /messages");
+    console.log("Login page - User is authenticated, redirecting to /messages");
     return <Navigate to="/messages" replace />;
   }
 

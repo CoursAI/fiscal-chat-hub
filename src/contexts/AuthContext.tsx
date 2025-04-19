@@ -3,7 +3,6 @@ import { User } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
-import { useNavigate, useLocation } from "react-router-dom";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -23,20 +22,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
-    console.log("AuthProvider mounted, checking session");
+    console.log("AuthProvider - Initializing");
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
-        console.log("Auth state changed:", event, "User:", newSession?.user?.email);
+        console.log("AuthProvider - Auth state changed:", { event, user: newSession?.user?.email });
         setSession(newSession);
         
         if (newSession?.user) {
-          // Defer Supabase calls with setTimeout to prevent deadlocks
+          // Defer profile fetch to prevent deadlocks
           setTimeout(() => {
             fetchUserProfile(newSession.user.id);
           }, 0);
@@ -49,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
-      console.log("Initial session check:", existingSession ? "logged in" : "not logged in");
+      console.log("AuthProvider - Initial session check:", existingSession?.user?.email);
       setSession(existingSession);
       
       if (existingSession?.user) {
@@ -64,44 +61,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Handle redirections when authentication state changes
-  useEffect(() => {
-    console.log("Auth state effect - User:", currentUser?.email, "Loading:", isLoading);
-    
-    if (!isLoading) {
-      if (currentUser) {
-        // User is authenticated
-        console.log("User authenticated, current path:", location.pathname);
-        if (location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/') {
-          console.log("Redirecting to messages page");
-          navigate('/messages', { replace: true });
-        }
-      } else if (location.pathname !== '/' && location.pathname !== '/login' && location.pathname !== '/register') {
-        // User is not authenticated and trying to access a protected route
-        console.log("User not authenticated, redirecting to login");
-        navigate('/login', { replace: true });
-      }
-    }
-  }, [currentUser, isLoading, location.pathname, navigate]);
-
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log("Fetching user profile for:", userId);
+      console.log("AuthProvider - Fetching profile for:", userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        setIsLoading(false);
-        throw error;
-      }
+      if (error) throw error;
 
       if (data) {
+        console.log("AuthProvider - Profile loaded:", data);
         const authUser = await supabase.auth.getUser();
-        console.log("User profile loaded:", data);
         setCurrentUser({
           id: data.id,
           name: data.full_name,
@@ -112,7 +85,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
       }
     } catch (error) {
-      console.error('Error processing user profile:', error);
+      console.error("AuthProvider - Error fetching profile:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger votre profil",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -270,7 +248,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     currentUser,
     isLoading,
-    isAuthenticated: !!currentUser,
+    isAuthenticated: !!session?.user,
     login,
     logout,
     register,

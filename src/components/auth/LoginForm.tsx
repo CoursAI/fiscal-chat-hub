@@ -7,15 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { ArrowRight, Mail, Lock, LogIn, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/components/ui/use-toast";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@fiscalchat.com");
+  const [password, setPassword] = useState("password123");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const { login, isAuthenticated } = useAuth();
-  const { toast } = useToast();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,22 +24,13 @@ const LoginForm: React.FC = () => {
     try {
       console.log("LoginForm - Attempting login with:", email);
       await login(email, password);
-      console.log("LoginForm - Login function completed successfully");
-      
-      // Manual redirection as a fallback
-      setTimeout(() => {
-        if (isAuthenticated) {
-          console.log("LoginForm - Manual redirection to /messages");
-          navigate('/messages', { replace: true });
-        }
-      }, 500);
+      console.log("LoginForm - Login successful");
+      navigate('/messages', { replace: true });
     } catch (error: any) {
       console.error("LoginForm - Login error:", error.message);
-      if (error.message === "Invalid login credentials") {
-        setError("Email ou mot de passe incorrect");
-      } else {
-        setError(error.message || "Une erreur est survenue lors de la connexion");
-      }
+      setError(error.message === "Invalid login credentials" 
+        ? "Email ou mot de passe incorrect" 
+        : error.message);
     } finally {
       setIsSubmitting(false);
     }

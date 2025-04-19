@@ -1,9 +1,9 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -11,17 +11,8 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    console.log("AppLayout - Authentication state check:", { isAuthenticated, isLoading });
-    
-    // If not authenticated and not loading, redirect to login
-    if (!isLoading && !isAuthenticated) {
-      console.log("AppLayout - Not authenticated, redirecting to login");
-      navigate('/login', { replace: true });
-    }
-  }, [isAuthenticated, isLoading, navigate]);
+  console.log("AppLayout - Current state:", { isAuthenticated, isLoading });
 
   if (isLoading) {
     console.log("AppLayout - Loading state");
@@ -33,11 +24,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    console.log("AppLayout - No authentication detected, redirecting to login");
+    console.log("AppLayout - Not authenticated, redirecting to login");
     return <Navigate to="/login" replace />;
   }
 
-  console.log("AppLayout - Authenticated, rendering protected content");
+  console.log("AppLayout - Rendering protected content");
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar />
