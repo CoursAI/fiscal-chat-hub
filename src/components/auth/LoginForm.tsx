@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +16,7 @@ const LoginForm: React.FC = () => {
   const [error, setError] = useState("");
   const { login, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +27,14 @@ const LoginForm: React.FC = () => {
       console.log("LoginForm - Attempting login with:", email);
       await login(email, password);
       console.log("LoginForm - Login function completed successfully");
+      
+      // Manual redirection as a fallback
+      setTimeout(() => {
+        if (isAuthenticated) {
+          console.log("LoginForm - Manual redirection to /messages");
+          navigate('/messages', { replace: true });
+        }
+      }, 500);
     } catch (error: any) {
       console.error("LoginForm - Login error:", error.message);
       if (error.message === "Invalid login credentials") {

@@ -3,6 +3,7 @@ import { User } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -22,6 +23,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     console.log("AuthProvider mounted, checking session");
@@ -29,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
-        console.log("Auth state changed:", event);
+        console.log("Auth state changed:", event, "User:", newSession?.user?.email);
         setSession(newSession);
         
         if (newSession?.user) {
@@ -60,6 +63,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Handle redirections when authentication state changes
+  useEffect(() => {
+    console.log("Auth state effect - User:", currentUser?.email, "Loading:", isLoading);
+    
+    if (!isLoading) {
+      if (currentUser) {
+        // User is authenticated
+        console.log("User authenticated, current path:", location.pathname);
+        if (location.pathname === '/login' || location.pathname === '/register' || location.pathname === '/') {
+          console.log("Redirecting to messages page");
+          navigate('/messages', { replace: true });
+        }
+      } else if (location.pathname !== '/' && location.pathname !== '/login' && location.pathname !== '/register') {
+        // User is not authenticated and trying to access a protected route
+        console.log("User not authenticated, redirecting to login");
+        navigate('/login', { replace: true });
+      }
+    }
+  }, [currentUser, isLoading, location.pathname, navigate]);
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -106,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error("Login error:", error.message);
+        setIsLoading(false);
         toast({
           title: "Erreur de connexion",
           description: error.message === "Invalid login credentials" 
@@ -122,14 +146,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Bienvenue sur votre espace personnel !",
       });
       
-      // No explicit redirection here - we let the isAuthenticated state change trigger redirection
+      // Manual redirection as a fallback (the useEffect should handle this)
+      setTimeout(() => {
+        navigate('/messages', { replace: true });
+      }, 500);
     } catch (error: any) {
       // Error handling is done above
       throw error;
-    } finally {
-      // Don't set isLoading to false yet - the auth state change will handle this
-      // Keep the user in loading state until profile is fetched
     }
+    // Don't set isLoading to false here as the auth state change will handle this
   };
 
   const logout = async () => {
