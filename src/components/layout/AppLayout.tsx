@@ -1,9 +1,9 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -11,8 +11,17 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
 
-  console.log("AppLayout - Current state:", { isAuthenticated, isLoading });
+  useEffect(() => {
+    console.log("AppLayout - Current state:", { isAuthenticated, isLoading });
+    
+    // If not authenticated and not loading, redirect to login
+    if (!isAuthenticated && !isLoading) {
+      console.log("AppLayout - Not authenticated, redirecting to login");
+      navigate('/login', { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
     console.log("AppLayout - Loading state");

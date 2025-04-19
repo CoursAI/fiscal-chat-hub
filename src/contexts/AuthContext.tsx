@@ -1,8 +1,10 @@
+
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { User } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
+import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -22,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log("AuthProvider - Initializing");
@@ -37,6 +40,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setTimeout(() => {
             fetchUserProfile(newSession.user.id);
           }, 0);
+          
+          // If user is authenticated and on login page, redirect them
+          if (window.location.pathname === '/login') {
+            console.log("AuthProvider - Redirecting authenticated user from login page to messages");
+            navigate('/messages', { replace: true });
+          }
         } else {
           setCurrentUser(null);
           setIsLoading(false);
@@ -51,6 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (existingSession?.user) {
         fetchUserProfile(existingSession.user.id);
+        
+        // If user is authenticated and on login page, redirect them
+        if (window.location.pathname === '/login') {
+          console.log("AuthProvider - Redirecting authenticated user from login page to messages");
+          navigate('/messages', { replace: true });
+        }
       } else {
         setIsLoading(false);
       }
@@ -59,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const fetchUserProfile = async (userId: string) => {
     try {
@@ -124,10 +139,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Bienvenue sur votre espace personnel !",
       });
       
-      // Manual redirection as a fallback (the useEffect should handle this)
-      setTimeout(() => {
-        navigate('/messages', { replace: true });
-      }, 500);
+      // Use navigate for immediate redirection
+      navigate('/messages', { replace: true });
     } catch (error: any) {
       // Error handling is done above
       throw error;
@@ -147,6 +160,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Déconnexion réussie",
         description: "À bientôt !",
       });
+      
+      // Redirect to login page after logout
+      navigate('/login', { replace: true });
     } catch (error: any) {
       console.error("Logout error:", error);
       toast({

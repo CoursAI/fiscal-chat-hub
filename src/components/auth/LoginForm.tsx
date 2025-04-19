@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,16 @@ const LoginForm: React.FC = () => {
   const [password, setPassword] = useState("password123");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Automatically redirect authenticated users
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log("LoginForm - User is authenticated, redirecting to /messages");
+      navigate('/messages', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +33,7 @@ const LoginForm: React.FC = () => {
     try {
       console.log("LoginForm - Attempting login with:", email);
       await login(email, password);
-      console.log("LoginForm - Login successful");
+      console.log("LoginForm - Login successful, redirecting to messages");
       navigate('/messages', { replace: true });
     } catch (error: any) {
       console.error("LoginForm - Login error:", error.message);
@@ -43,6 +52,20 @@ const LoginForm: React.FC = () => {
     } else {
       setEmail("client@example.com");
       setPassword("password123");
+    }
+  };
+
+  // Quick login for admin
+  const handleQuickLogin = async () => {
+    setError("");
+    setIsSubmitting(true);
+    try {
+      await login("admin@fiscalchat.com", "password123");
+      navigate('/messages', { replace: true });
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -89,7 +112,7 @@ const LoginForm: React.FC = () => {
         </Alert>
       )}
 
-      <div>
+      <div className="space-y-3">
         <Button
           type="submit"
           className="w-full py-6"
@@ -109,6 +132,17 @@ const LoginForm: React.FC = () => {
               <LogIn className="ml-2 h-5 w-5" />
             </>
           )}
+        </Button>
+
+        <Button
+          type="button"
+          className="w-full"
+          variant="outline"
+          size="lg"
+          onClick={handleQuickLogin}
+          disabled={isSubmitting}
+        >
+          Connexion rapide (admin)
         </Button>
       </div>
 
