@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { ArrowRight, User, Mail, Lock, Check, UserPlus, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/components/ui/use-toast";
 
 const RegisterForm: React.FC = () => {
   const [name, setName] = useState("");
@@ -18,7 +17,6 @@ const RegisterForm: React.FC = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const { register } = useAuth();
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,10 +38,6 @@ const RegisterForm: React.FC = () => {
 
     try {
       await register(name, email, password);
-      toast({
-        title: "Inscription réussie",
-        description: "Votre compte a été créé avec succès.",
-      });
       setSuccess(true);
       // Reset form
       setName("");
@@ -51,8 +45,7 @@ const RegisterForm: React.FC = () => {
       setPassword("");
       setConfirmPassword("");
     } catch (error: any) {
-      console.error("Registration error:", error);
-      setError(error.message || "Une erreur est survenue lors de l'inscription");
+      setError(error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -69,13 +62,14 @@ const RegisterForm: React.FC = () => {
           </div>
           <h3 className="font-bold text-lg text-green-800 mb-2 text-center">Inscription réussie !</h3>
           <p className="mb-6 text-center">
-            Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.
+            Votre demande a été envoyée avec succès. Un administrateur examinera votre demande
+            et activera votre compte prochainement.
           </p>
           <Link 
             to="/login" 
             className="block w-full py-3 bg-green-600 text-white text-center rounded-full hover:bg-green-700 transition-colors font-medium"
           >
-            Aller à la page de connexion
+            Retour à la page de connexion
           </Link>
         </div>
       ) : (

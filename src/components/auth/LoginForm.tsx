@@ -1,7 +1,6 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,20 +9,11 @@ import { ArrowRight, Mail, Lock, LogIn, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState("admin@fiscalchat.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const { login, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-
-  // Automatically redirect authenticated users
-  useEffect(() => {
-    if (isAuthenticated) {
-      console.log("LoginForm - User is authenticated, redirecting to /messages");
-      navigate('/messages', { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,39 +21,13 @@ const LoginForm: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      console.log("LoginForm - Attempting login with:", email);
       await login(email, password);
-      console.log("LoginForm - Login successful, redirecting to messages");
-      navigate('/messages', { replace: true });
     } catch (error: any) {
-      console.error("LoginForm - Login error:", error.message);
-      setError(error.message === "Invalid login credentials" 
-        ? "Email ou mot de passe incorrect" 
-        : error.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const fillDemoCredentials = (type: 'admin' | 'client') => {
-    if (type === 'admin') {
-      setEmail("admin@fiscalchat.com");
-      setPassword("password123");
-    } else {
-      setEmail("client@example.com");
-      setPassword("password123");
-    }
-  };
-
-  // Quick login for admin
-  const handleQuickLogin = async () => {
-    setError("");
-    setIsSubmitting(true);
-    try {
-      await login("admin@fiscalchat.com", "password123");
-      navigate('/messages', { replace: true });
-    } catch (error: any) {
-      setError(error.message);
+      if (error.message === "Invalid login credentials") {
+        setError("Email ou mot de passe incorrect");
+      } else {
+        setError(error.message);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +76,7 @@ const LoginForm: React.FC = () => {
         </Alert>
       )}
 
-      <div className="space-y-3">
+      <div>
         <Button
           type="submit"
           className="w-full py-6"
@@ -133,17 +97,6 @@ const LoginForm: React.FC = () => {
             </>
           )}
         </Button>
-
-        <Button
-          type="button"
-          className="w-full"
-          variant="outline"
-          size="lg"
-          onClick={handleQuickLogin}
-          disabled={isSubmitting}
-        >
-          Connexion rapide (admin)
-        </Button>
       </div>
 
       <div className="text-center text-sm">
@@ -157,17 +110,11 @@ const LoginForm: React.FC = () => {
         <div className="mt-8 p-5 bg-gray-50 border border-gray-100 rounded-xl shadow-sm">
           <p className="text-gray-600 font-medium mb-3">Comptes de démonstration :</p>
           <div className="grid gap-2 text-xs">
-            <div 
-              onClick={() => fillDemoCredentials('admin')}
-              className="px-3 py-2 bg-white border border-gray-200 rounded-md cursor-pointer hover:border-fiscal-blue-300 hover:bg-fiscal-blue-50 transition-colors"
-            >
+            <div className="px-3 py-2 bg-white border border-gray-200 rounded-md">
               <p className="text-fiscal-blue-600 font-bold">Admin</p>
               <p className="text-gray-500">admin@fiscalchat.com / password123</p>
             </div>
-            <div 
-              onClick={() => fillDemoCredentials('client')}
-              className="px-3 py-2 bg-white border border-gray-200 rounded-md cursor-pointer hover:border-fiscal-blue-300 hover:bg-fiscal-blue-50 transition-colors"
-            >
+            <div className="px-3 py-2 bg-white border border-gray-200 rounded-md">
               <p className="text-fiscal-blue-600 font-bold">Client</p>
               <p className="text-gray-500">client@example.com / password123</p>
             </div>

@@ -4,14 +4,13 @@ import { User } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
-import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   currentUser: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void;
   register: (name: string, email: string, password: string) => Promise<void>;
   updateProfile: (data: { name?: string }) => Promise<void>;
   updatePassword: (newPassword: string) => Promise<void>;
@@ -24,40 +23,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("AuthProvider - Initializing");
+    console.log("AuthProvider mounted, checking session");
     
-    // First check for existing session
-    const initializeAuth = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Get current session
-        const { data: { session: existingSession } } = await supabase.auth.getSession();
-        console.log("AuthProvider - Initial session check:", existingSession?.user?.email);
-        setSession(existingSession);
-        
-        if (existingSession?.user) {
-          await fetchUserProfile(existingSession.user.id);
-        } else {
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error("Error initializing auth:", error);
-        setIsLoading(false);
-      }
-    };
-    
-    // Set up auth state listener
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        console.log("AuthProvider - Auth state changed:", { event, user: newSession?.user?.email });
+      (event, newSession) => {
+        console.log("Auth state changed:", event);
         setSession(newSession);
         
         if (newSession?.user) {
-          await fetchUserProfile(newSession.user.id);
+          // Defer Supabase calls with setTimeout to prevent deadlocks
+          setTimeout(() => {
+            fetchUserProfile(newSession.user.id);
+          }, 0);
         } else {
           setCurrentUser(null);
           setIsLoading(false);
@@ -65,16 +45,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    initializeAuth();
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      console.log("Initial session check:", existingSession ? "logged in" : "not logged in");
+      setSession(existingSession);
+      
+      if (existingSession?.user) {
+        fetchUserProfile(existingSession.user.id);
+      } else {
+        setIsLoading(false);
+      }
+    });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, []);
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      console.log("AuthProvider - Fetching profile for:", userId);
+      console.log("Fetching user profile for:", userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -82,13 +72,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (error) {
-        console.error("Error fetching profile:", error);
+        console.error('Error fetching user profile:', error);
+        setIsLoading(false);
         throw error;
       }
 
       if (data) {
-        console.log("AuthProvider - Profile loaded:", data);
         const authUser = await supabase.auth.getUser();
+        console.log("User profile loaded:", data);
         setCurrentUser({
           id: data.id,
           name: data.full_name,
@@ -97,29 +88,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           avatarUrl: undefined,
           lastSeen: data.updated_at ? new Date(data.updated_at) : undefined
         });
-      } else {
-        console.error("No profile found for user:", userId);
-        toast({
-          title: "Erreur",
-          description: "Profil utilisateur introuvable",
-          variant: "destructive",
-        });
       }
     } catch (error) {
-      console.error("AuthProvider - Error fetching profile:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger votre profil",
-        variant: "destructive",
-      });
+      console.error('Error processing user profile:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const login = async (email: string, password: string) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       console.log("Attempting login for:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -135,7 +114,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             : error.message,
           variant: "destructive",
         });
-        setIsLoading(false);
         throw error;
       }
 
@@ -144,18 +122,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Connexion réussie",
         description: "Bienvenue sur votre espace personnel !",
       });
-      
-      navigate('/messages', { replace: true });
     } catch (error: any) {
       // Error handling is done above
+    } finally {
       setIsLoading(false);
-      throw error;
     }
   };
 
   const logout = async () => {
     try {
-      setIsLoading(true);
       console.log("Logging out");
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
@@ -166,8 +141,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         title: "Déconnexion réussie",
         description: "À bientôt !",
       });
-      
-      navigate('/login', { replace: true });
     } catch (error: any) {
       console.error("Logout error:", error);
       toast({
@@ -175,8 +148,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Une erreur est survenue lors de la déconnexion.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -213,7 +184,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     } catch (error: any) {
       // Error handling is done above
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -271,7 +241,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     currentUser,
     isLoading,
-    isAuthenticated: !!session?.user,
+    isAuthenticated: !!currentUser,
     login,
     logout,
     register,
