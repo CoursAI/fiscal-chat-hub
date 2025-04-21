@@ -12,8 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 
 const DocumentList: React.FC = () => {
   const getFileIcon = (type: string) => {
@@ -30,10 +28,6 @@ const DocumentList: React.FC = () => {
     if (bytes < 1024) return bytes + " B";
     else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
     else return (bytes / 1048576).toFixed(1) + " MB";
-  };
-
-  const formatDate = (date: Date) => {
-    return format(date, "dd MMM yyyy à HH:mm", { locale: fr });
   };
 
   return (
@@ -55,7 +49,6 @@ const DocumentList: React.FC = () => {
                   <th className="pb-3 text-left font-medium text-gray-500 text-sm">Type</th>
                   <th className="pb-3 text-left font-medium text-gray-500 text-sm">Nom</th>
                   <th className="pb-3 text-left font-medium text-gray-500 text-sm">Taille</th>
-                  <th className="pb-3 text-left font-medium text-gray-500 text-sm">Date d'envoi</th>
                   <th className="pb-3 text-left font-medium text-gray-500 text-sm">Actions</th>
                 </tr>
               </thead>
@@ -72,9 +65,6 @@ const DocumentList: React.FC = () => {
                       <div className="text-sm text-gray-500">{document.type.split("/")[1]}</div>
                     </td>
                     <td className="py-3">{formatFileSize(document.size)}</td>
-                    <td className="py-3">
-                      {document.createdAt ? formatDate(document.createdAt) : "-"}
-                    </td>
                     <td className="py-3">
                       <div className="flex items-center space-x-2">
                         <Button variant="ghost" size="icon" asChild>

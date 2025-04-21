@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { ArrowRight, User, Mail, Lock, Check, UserPlus, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const RegisterForm: React.FC = () => {
   const [name, setName] = useState("");
@@ -29,11 +27,6 @@ const RegisterForm: React.FC = () => {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères.");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -52,127 +45,86 @@ const RegisterForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 w-full">
+    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md">
       {success ? (
-        <div className="bg-green-50 border border-green-100 text-green-700 p-6 rounded-xl shadow-sm">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-green-100 rounded-full p-3">
-              <Check className="w-8 h-8 text-green-600" />
-            </div>
-          </div>
-          <h3 className="font-bold text-lg text-green-800 mb-2 text-center">Inscription réussie !</h3>
-          <p className="mb-6 text-center">
+        <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-md">
+          <h3 className="font-semibold mb-1">Inscription réussie !</h3>
+          <p className="mb-4">
             Votre demande a été envoyée avec succès. Un administrateur examinera votre demande
             et activera votre compte prochainement.
           </p>
-          <Link 
-            to="/login" 
-            className="block w-full py-3 bg-green-600 text-white text-center rounded-full hover:bg-green-700 transition-colors font-medium"
-          >
+          <Link to="/login" className="text-fiscal-blue-600 hover:underline">
             Retour à la page de connexion
           </Link>
         </div>
       ) : (
         <>
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-gray-700 font-medium">Nom complet</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5" />
-              <Input
-                id="name"
-                type="text"
-                placeholder="Jean Dupont"
-                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500 rounded-xl"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
+            <Label htmlFor="name">Nom complet</Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Jean Dupont"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-700 font-medium">Adresse email</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="votre@email.com"
-                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500 rounded-xl"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+            <Label htmlFor="email">Adresse email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="votre@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-700 font-medium">Mot de passe</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5" />
-              <Input
-                id="password"
-                type="password"
-                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500 rounded-xl"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-            </div>
-            <p className="text-xs text-gray-500">Minimum 6 caractères</p>
+            <Label htmlFor="password">Mot de passe</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirm-password" className="text-gray-700 font-medium">Confirmer le mot de passe</Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-5 w-5" />
-              <Input
-                id="confirm-password"
-                type="password"
-                className="pl-10 py-3 bg-white border-gray-200 focus:border-fiscal-blue-500 focus:ring-fiscal-blue-500 rounded-xl"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
+            <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+            <Input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
           </div>
 
-          {error && (
-            <Alert variant="destructive" className="rounded-xl">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="ml-2">{error}</AlertDescription>
-            </Alert>
-          )}
+          {error && <p className="text-red-500 text-sm">{error}</p>}
 
-          <div>
-            <Button 
-              type="submit" 
-              className="w-full py-6" 
-              variant="gradient"
-              size="lg" 
-              rounded="full"
-              disabled={isSubmitting}
-            >
+          <div className="pt-2">
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
                   <span>Traitement...</span>
                 </div>
               ) : (
-                <>
-                  <span>S'inscrire</span>
-                  <UserPlus className="ml-2 h-5 w-5" />
-                </>
+                "S'inscrire"
               )}
             </Button>
           </div>
 
           <div className="text-center text-sm">
-            <p className="text-gray-600">
+            <p>
               Déjà un compte ?{" "}
-              <Link to="/login" className="text-fiscal-blue-600 hover:underline font-medium group">
-                Se connecter <ArrowRight className="inline h-3 w-3 group-hover:translate-x-1 transition-transform" />
+              <Link to="/login" className="text-fiscal-blue-600 hover:underline">
+                Se connecter
               </Link>
             </p>
           </div>

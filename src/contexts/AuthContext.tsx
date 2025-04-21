@@ -1,9 +1,8 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { User } from "@/types";
+import { adminUser, mockClients } from "@/lib/mock-data";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
   currentUser: User | null;
@@ -12,229 +11,108 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   register: (name: string, email: string, password: string) => Promise<void>;
-  updateProfile: (data: { name?: string }) => Promise<void>;
-  updatePassword: (newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    console.log("AuthProvider mounted, checking session");
-    
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        console.log("Auth state changed:", event);
-        setSession(newSession);
-        
-        if (newSession?.user) {
-          // Defer Supabase calls with setTimeout to prevent deadlocks
-          setTimeout(() => {
-            fetchUserProfile(newSession.user.id);
-          }, 0);
-        } else {
-          setCurrentUser(null);
-          setIsLoading(false);
-        }
+    // Check if user is already logged in (via localStorage in this mock version)
+    const storedUser = localStorage.getItem("fiscalChatUser");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setCurrentUser(parsedUser);
+      } catch (error) {
+        console.error("Failed to parse stored user", error);
+        localStorage.removeItem("fiscalChatUser");
       }
-    );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
-      console.log("Initial session check:", existingSession ? "logged in" : "not logged in");
-      setSession(existingSession);
-      
-      if (existingSession?.user) {
-        fetchUserProfile(existingSession.user.id);
-      } else {
-        setIsLoading(false);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      console.log("Fetching user profile for:", userId);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        setIsLoading(false);
-        throw error;
-      }
-
-      if (data) {
-        const authUser = await supabase.auth.getUser();
-        console.log("User profile loaded:", data);
-        setCurrentUser({
-          id: data.id,
-          name: data.full_name,
-          email: authUser.data.user?.email || '',
-          role: data.role as 'admin' | 'client',
-          avatarUrl: undefined,
-          lastSeen: data.updated_at ? new Date(data.updated_at) : undefined
-        });
-      }
-    } catch (error) {
-      console.error('Error processing user profile:', error);
-    } finally {
-      setIsLoading(false);
     }
-  };
+    setIsLoading(false);
+  }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
+    
     try {
-      console.log("Attempting login for:", email);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        console.error("Login error:", error.message);
+      // In a real app, this would be an API call
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
+      
+      // Mock login logic
+      if (email === adminUser.email && password === "admin") {
+        setCurrentUser(adminUser);
+        localStorage.setItem("fiscalChatUser", JSON.stringify(adminUser));
         toast({
-          title: "Erreur de connexion",
-          description: error.message === "Invalid login credentials" 
-            ? "Email ou mot de passe incorrect" 
-            : error.message,
-          variant: "destructive",
+          title: "Connexion réussie",
+          description: `Bienvenue, ${adminUser.name} !`,
         });
-        throw error;
+      } else {
+        const clientUser = mockClients.find(client => client.email === email);
+        if (clientUser && password === "client") {
+          setCurrentUser(clientUser);
+          localStorage.setItem("fiscalChatUser", JSON.stringify(clientUser));
+          toast({
+            title: "Connexion réussie",
+            description: `Bienvenue, ${clientUser.name} !`,
+          });
+        } else {
+          throw new Error("Email ou mot de passe incorrect");
+        }
       }
-
-      console.log("Login successful:", data?.user?.id);
-      toast({
-        title: "Connexion réussie",
-        description: "Bienvenue sur votre espace personnel !",
-      });
     } catch (error: any) {
-      // Error handling is done above
+      toast({
+        title: "Erreur de connexion",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = async () => {
-    try {
-      console.log("Logging out");
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
-      setCurrentUser(null);
-      setSession(null);
-      toast({
-        title: "Déconnexion réussie",
-        description: "À bientôt !",
-      });
-    } catch (error: any) {
-      console.error("Logout error:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la déconnexion.",
-        variant: "destructive",
-      });
-    }
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem("fiscalChatUser");
+    toast({
+      title: "Déconnexion réussie",
+      description: "À bientôt !",
+    });
   };
 
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true);
-    try {
-      console.log("Attempting registration for:", email);
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: name,
-          },
-        },
-      });
-
-      if (error) {
-        console.error("Registration error:", error.message);
-        toast({
-          title: "Erreur d'inscription",
-          description: error.message === "User already registered" 
-            ? "Un compte avec cet email existe déjà" 
-            : error.message,
-          variant: "destructive",
-        });
-        throw error;
-      }
-
-      console.log("Registration successful:", data);
-      toast({
-        title: "Inscription réussie",
-        description: "Votre compte a été créé avec succès.",
-      });
-    } catch (error: any) {
-      // Error handling is done above
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateProfile = async (data: { name?: string }) => {
-    if (!currentUser) return;
     
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ full_name: data.name })
-        .eq('id', currentUser.id);
-
-      if (error) throw error;
-
-      setCurrentUser(prev => prev ? { ...prev, name: data.name || prev.name } : null);
+      // In a real app, this would be an API call
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
       
+      // Check if email is already in use
+      const existingUser = [...mockClients, adminUser].find(user => user.email === email);
+      if (existingUser) {
+        throw new Error("Cet email est déjà utilisé");
+      }
+      
+      // In a real app, we would create a new user in the database
+      // For this mock version, we'll just show a success message
       toast({
-        title: "Profil mis à jour",
-        description: "Vos informations ont bien été enregistrées.",
+        title: "Inscription réussie",
+        description: "Votre compte a été créé avec succès. Un administrateur examinera votre demande.",
       });
+      
     } catch (error: any) {
       toast({
-        title: "Erreur de mise à jour",
+        title: "Erreur d'inscription",
         description: error.message,
         variant: "destructive",
       });
       throw error;
-    }
-  };
-
-  const updatePassword = async (newPassword: string) => {
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Mot de passe mis à jour",
-        description: "Votre nouveau mot de passe a été enregistré.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erreur de mise à jour",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -245,12 +123,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     register,
-    updateProfile,
-    updatePassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+}
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
